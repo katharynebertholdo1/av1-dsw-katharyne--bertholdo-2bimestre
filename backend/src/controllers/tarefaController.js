@@ -5,7 +5,12 @@ export async function listarTaskPrisma(req, res) {
     const listaTasks = await TarefaModel.listarTasks();
 
     return res.json(listaTasks);
-  } catch (error) {}
+  } catch (error) {
+    console.error("Erro ao listar tasks:", error);
+    return res
+      .status(500)
+      .json({ erro: "Erro ao listar tasks", detalhes: error.message });
+  }
 }
 
 export async function criarTaskPrisma(req, res) {
