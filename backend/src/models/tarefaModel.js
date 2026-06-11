@@ -1,69 +1,50 @@
 import { prisma } from "../config/prisma.js";
 
-export async function listarTasks() {
-  const listaTasks = await prisma.task.findMany();
-
-  return listaTasks;
+export async function listar() {
+  return await prisma.task.findMany();
 }
 
-export async function criarTask(title, description = null) {
-  const novaTask = await prisma.task.create({
+export async function buscarPorId(id) {
+  const task = await prisma.task.findUnique({ where: { id } });
+  return task ?? null;
+}
+
+export async function criar(data) {
+  const { title, description = null, completed = false } = data;
+  const nova = await prisma.task.create({
     data: {
       title: title.trim(),
-      description: description ? description.trim() : null
+      description: description ? description.trim() : null,
+      completed
     }
   });
-
-  return novaTask;
+  return nova;
 }
 
-export async function buscarTaskPorId(id) {
-  const task = await prisma.task.findUnique({
-    where: {
-      id: id
-    }
-  });
-
-  return task;
-}
-
-export async function atualizarTask(id, title, description, completed) {
+export async function atualizar(id, data) {
   try {
-    const taskAtualizada = await prisma.task.update({
-      where: {
-        id: id
-      },
+    const { title, description, completed } = data;
+    const atualizada = await prisma.task.update({
+      where: { id },
       data: {
         ...(title !== undefined && { title: title.trim() }),
-        ...(description !== undefined && {
-          description: description ? description.trim() : null
-        }),
-        ...(completed !== undefined && { completed: completed })
+        ...(description !== undefined && { description: description ? description.trim() : null }),
+        ...(completed !== undefined && { completed })
       }
     });
-
-    return taskAtualizada;
+    return atualizada;
   } catch (error) {
-    if (error.code === "P2025") {
-      return null;
-    }
+    if (error?.code === "P2025") return null;
     throw error;
   }
 }
 
-export async function excluirTask(id) {
+export async function excluir(id) {
   try {
-    const taskRemovida = await prisma.task.delete({
-      where: {
-        id: id
-      }
-    });
-
-    return taskRemovida;
+    const removida = await prisma.task.delete({ where: { id } });
+    return removida;
   } catch (error) {
-    if (error.code === "P2025") {
-      return null;
-    }
+    if (error?.code === "P2025") return null;
     throw error;
   }
 }

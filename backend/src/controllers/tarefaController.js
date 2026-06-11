@@ -1,117 +1,65 @@
-import * as TarefaModel from "../models/tarefaModel.js";
+import * as TaskModel from "../models/tarefaModel.js";
 
-export async function listarTaskPrisma(req, res) {
+export async function listar(req, res) {
   try {
-    const listaTasks = await TarefaModel.listarTasks();
-
-    return res.json(listaTasks);
+    const lista = await TaskModel.listar();
+    return res.json(lista);
   } catch (error) {
     console.error("Erro ao listar tasks:", error);
-    return res
-      .status(500)
-      .json({ erro: "Erro ao listar tasks", detalhes: error.message });
+    return res.status(500).json({ erro: "Erro ao listar tasks", detalhes: error.message });
   }
 }
 
-export async function criarTaskPrisma(req, res) {
+export async function criar(req, res) {
   try {
-    const { title, description } = req.body;
-
-    if (!title?.trim()) {
-      return res.status(400).json({ erro: "Título é obrigatório" });
+    const { title, description, completed } = req.body;
+    if (!title || !title.toString().trim()) {
+      return res.status(400).json({ erro: "Campo 'title' é obrigatório" });
     }
-
-    const taskCriada = await TarefaModel.criarTask(title, description);
-
-    res.status(201).json({
-      mensagem: "Task criada com sucesso!",
-      task: taskCriada
-    });
+    const criada = await TaskModel.criar({ title, description, completed });
+    return res.status(201).json({ mensagem: "Criada", task: criada });
   } catch (error) {
     console.error("Erro ao criar task:", error);
-    res
-      .status(500)
-      .json({ erro: "Erro ao criar task", detalhes: error.message });
+    return res.status(500).json({ erro: "Erro ao criar task", detalhes: error.message });
   }
 }
 
-export async function buscarTaskPorIdPrisma(req, res) {
+export async function buscarPorId(req, res) {
   try {
-    const idNumero = Number(req.params.id);
-
-    if (!idNumero) {
-      return res.status(400).json({ erro: "ID inválido" });
-    }
-
-    const task = await TarefaModel.buscarTaskPorId(idNumero);
-
-    if (!task) {
-      return res.status(404).json({ erro: "Task não encontrada" });
-    }
-
-    res.json(task);
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ erro: "ID inválido" });
+    const task = await TaskModel.buscarPorId(id);
+    if (!task) return res.status(404).json({ erro: "Task não encontrada" });
+    return res.json(task);
   } catch (error) {
     console.error("Erro ao buscar task:", error);
-    res
-      .status(500)
-      .json({ erro: "Erro ao buscar task", detalhes: error.message });
+    return res.status(500).json({ erro: "Erro ao buscar task", detalhes: error.message });
   }
 }
 
-export async function atualizarTaskPrisma(req, res) {
+export async function atualizar(req, res) {
   try {
-    const idNumero = Number(req.params.id);
-    const { title, description, completed } = req.body;
-
-    if (!idNumero) {
-      return res.status(400).json({ erro: "ID inválido" });
-    }
-
-    const taskAtualizada = await TarefaModel.atualizarTask(
-      idNumero,
-      title,
-      description,
-      completed
-    );
-
-    if (!taskAtualizada) {
-      return res.status(404).json({ erro: "Task não encontrada" });
-    }
-
-    res.json({
-      mensagem: "Task atualizada com sucesso!",
-      task: taskAtualizada
-    });
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ erro: "ID inválido" });
+    const data = req.body || {};
+    const atualizada = await TaskModel.atualizar(id, data);
+    if (!atualizada) return res.status(404).json({ erro: "Task não encontrada" });
+    return res.json({ mensagem: "Atualizada", task: atualizada });
   } catch (error) {
     console.error("Erro ao atualizar task:", error);
-    res
-      .status(500)
-      .json({ erro: "Erro ao atualizar task", detalhes: error.message });
+    return res.status(500).json({ erro: "Erro ao atualizar task", detalhes: error.message });
   }
 }
 
-export async function excluirTaskPrisma(req, res) {
+export async function excluir(req, res) {
   try {
-    const idNumero = Number(req.params.id);
-
-    if (!idNumero) {
-      return res.status(400).json({ erro: "ID inválido" });
-    }
-
-    const taskRemovida = await TarefaModel.excluirTask(idNumero);
-
-    if (!taskRemovida) {
-      return res.status(404).json({ erro: "Task não encontrada" });
-    }
-
-    res.json({
-      mensagem: "Task excluída com sucesso!",
-      task: taskRemovida
-    });
+    const id = Number(req.params.id);
+    if (!id) return res.status(400).json({ erro: "ID inválido" });
+    const removida = await TaskModel.excluir(id);
+    if (!removida) return res.status(404).json({ erro: "Task não encontrada" });
+    return res.json({ mensagem: "Excluída", task: removida });
   } catch (error) {
     console.error("Erro ao excluir task:", error);
-    res
-      .status(500)
-      .json({ erro: "Erro ao excluir task", detalhes: error.message });
+    return res.status(500).json({ erro: "Erro ao excluir task", detalhes: error.message });
   }
 }
